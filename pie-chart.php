@@ -90,21 +90,49 @@ set_error_handler('onError');
 */
 
 if(isset($_SERVER['PATH_INFO'])) {
-    $pathparts = explode('/',trim($_SERVER['PATH_INFO'],'/.png'));
-    $res = array_shift($pathparts);
-    list($_REQUEST['w'],$_REQUEST['h']) = explode('x',$res);
+    $pathparts = explode('/',trim($_SERVER['PATH_INFO'],'/'));
 }
 
-/** Get necessary input data  **/
-$width = $_REQUEST['w'];
-$height = $_REQUEST['h'];
-
+$width = 340;
+$height = 300;
 $data = array();
-foreach($pathparts as $s) {
-    list($key,$value) = explode(':',$s);
-    $key = "$key (".number_format($value,2,"."," ").")";
-    $data[$key] = $value;
+$settings = array(
+    'legend'=>true,
+    'significance'=>0
+);
+
+foreach($pathparts as $p) {
+    if(preg_match('/^[0-9]+x[0-9]+$/',$p)) {
+        // handle resolution command
+        list($width,$height) = explode('x',$p);
+
+    } elseif(preg_match('/^(.*)\.png$/', $p, $m)) {
+        // handle optional title
+        $title = $m[1];
+
+    } elseif(preg_match('/^([^:]+:[0-9]+(\.[0-9]+)?)(;[^:]+:[0-9]+(\.[0-9]+)?)*$/',$p, $m)) {
+        // handle data string
+        foreach(explode(';',$p) as $s) {
+            list($key, $value) = explode(':',$s);
+            $data[$key] = $value;
+        }
+
+    } elseif(preg_match('/^(([a-z]+)=([a-z0-9]+))(;([a-z]+)=([a-z0-9]+))*$/',$p)) {
+        // handle optional settings
+        foreach(explode(';',$p) as $s) {
+            list($key,$value) = explode('=',$s);
+            switch($key) {
+                case 'legend': $settings['legend'] = $value=='on'; break;
+                case 'significance': $settings['significance'] = intval($value); break;
+            }
+        }
+
+    } else {
+        // handle garbage
+        error('Unrecognized input: \''.$p.'\'');
+    }
 }
+
 
 /*
 **
@@ -112,7 +140,7 @@ foreach($pathparts as $s) {
 **
 */
 
-function render($width, $height, $data) {
+function render($width, $height, $data, $settings) {
     global $conf;
 
     //create image
@@ -127,6 +155,8 @@ function render($width, $height, $data) {
     $longestKey = '';
 
     foreach($data as $key=>$value) {
+        $key = "$key (".number_format($value,$settings['significance'],"."," ").")";
+
         $slices[$key] = $value;
         $sum = $sum + $value;
 
@@ -239,7 +269,7 @@ function render($width, $height, $data) {
 }
 
 // do actual render
-$image = render($width, $height, $data);
+$image = render($width, $height, $data, $settings);
 
 header('content-type: image/png');
 imagepng($image);

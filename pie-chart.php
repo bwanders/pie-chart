@@ -98,7 +98,8 @@ $height = 300;
 $data = array();
 $settings = array(
     'legend'=>true,
-    'significance'=>-1
+    'significance'=>-1,
+    'sort'=>false
 );
 
 foreach($pathparts as $p) {
@@ -124,6 +125,7 @@ foreach($pathparts as $p) {
             switch($key) {
                 case 'legend': $settings['legend'] = $value=='on'; break;
                 case 'significance': $settings['significance'] = intval($value); break;
+                case 'sort': $settings['sort'] = $value=='on'; break;
             }
         }
 
@@ -173,8 +175,10 @@ function render($width, $height, $data, $settings) {
         if(strlen($longestKey) < strlen($key)) $longestKey = $key;
     }
 
-    //sort slices from largest to smallest
-    //arsort($slices, SORT_NUMERIC);
+    if($settings['sort']) {
+        // sort slices from largest to smallest
+        arsort($slices, SORT_NUMERIC);
+    }
 
     $numSlices = 0;
     foreach($slices as $key=>$value) {

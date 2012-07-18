@@ -98,7 +98,7 @@ $height = 300;
 $data = array();
 $settings = array(
     'legend'=>true,
-    'significance'=>0
+    'significance'=>-1
 );
 
 foreach($pathparts as $p) {
@@ -130,6 +130,16 @@ foreach($pathparts as $p) {
     } else {
         // handle garbage
         error('Unrecognized input: \''.$p.'\'');
+    }
+}
+
+// auto-detect significance
+if($settings['significance'] < 0) {
+    foreach($data as $value) {
+        $settings['significance'] = max(
+            $settings['significance'], 
+            strlen(strval($value-floor($value)))-2
+        );
     }
 }
 
@@ -199,6 +209,10 @@ function render($width, $height, $data, $settings) {
         2*$legendPadding 
         + $numSlices*($legendVerticalSpacing + $legendTextHeight); //needed height for legend
 
+    if(!$settings['legend']) {
+        $legendWidth = $legendHeight = 0;
+    }
+
     $horzPieSize = min( 
         $width 
         - 2*$graphPadding 
@@ -234,29 +248,30 @@ function render($width, $height, $data, $settings) {
 
 
     /** Draw Legend **/
-    if($verticalLayout) {
-        $lx = $graphPadding;
-        $ly = $graphPadding + $pieSize + $graphSpacing;
-    } else {
-        $lx = $graphPadding + $pieSize + $graphSpacing;
-        $ly = $graphPadding;
-    }
+    if($settings['legend']) {
+        if($verticalLayout) {
+            $lx = $graphPadding;
+            $ly = $graphPadding + $pieSize + $graphSpacing;
+        } else {
+            $lx = $graphPadding + $pieSize + $graphSpacing;
+            $ly = $graphPadding;
+        }
 
-    $white = imagecolorallocate($image, 255,255,255);
-    $black = imagecolorallocate($image, 0,0,1);
+        $white = imagecolorallocate($image, 255,255,255);
+        $black = imagecolorallocate($image, 0,0,1);
 
+        imagefilledrectangle($image,$lx,$ly,$lx+$legendWidth,$ly+$legendHeight,$white);
+        imagerectangle($image,$lx,$ly,$lx+$legendWidth,$ly+$legendHeight,$black);
 
-    imagefilledrectangle($image,$lx,$ly,$lx+$legendWidth,$ly+$legendHeight,$white);
-    imagerectangle($image,$lx,$ly,$lx+$legendWidth,$ly+$legendHeight,$black);
+        $px = $lx + $legendPadding;
+        $py = $ly + $legendPadding;
 
-    $px = $lx + $legendPadding;
-    $py = $ly + $legendPadding;
-
-    foreach($slices as $key=>$value) {
-        $color = $sliceColors[$key];
-        imagefilledrectangle($image, $px, $py, $px+$legendColorboxSize, $py+$legendColorboxSize,$color);
-        imagestring($image,$fontsize,$px+$legendColorboxSize+$legendColorboxSpacing, $py, $key, $black);
-        $py += $legendVerticalSpacing + $legendTextHeight;
+        foreach($slices as $key=>$value) {
+            $color = $sliceColors[$key];
+            imagefilledrectangle($image, $px, $py, $px+$legendColorboxSize, $py+$legendColorboxSize,$color);
+            imagestring($image,$fontsize,$px+$legendColorboxSize+$legendColorboxSpacing, $py, $key, $black);
+            $py += $legendVerticalSpacing + $legendTextHeight;
+        }
     }
 
 

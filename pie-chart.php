@@ -91,6 +91,8 @@ set_error_handler('onError');
 
 if(isset($_SERVER['PATH_INFO'])) {
     $pathparts = explode('/',trim($_SERVER['PATH_INFO'],'/'));
+} else {
+    error("No parameters given.");
 }
 
 $width = 340;

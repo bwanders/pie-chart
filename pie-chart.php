@@ -1,14 +1,28 @@
 <?php
 
-/** define constants **/
-$colors = array(
-	'a4a4ff',
-	'a4ffa4',
-	'ffa4a4',
-	'a4ffff',
-	'ffa4ff',
-	'ffffa4',
+/*
+**
+** CONFIGURATION
+**
+*/
+
+$conf = array(
+    // an array of hexadecimal color codes
+    'colors' => array(
+	    'a4a4ff',
+    	'a4ffa4',
+    	'ffa4a4',
+    	'a4ffff',
+    	'ffa4ff',
+    	'ffffa4',
+    )
 );
+
+/*
+**
+** UTILITIES
+**
+*/
 
 // color allocation function
 function hexcolor($image, $hex) {
@@ -99,7 +113,7 @@ foreach($pathparts as $s) {
 */
 
 function render($width, $height, $data) {
-    global $colors;
+    global $conf;
 
     //create image
     $image = imagecreatetruecolor($width, $height);
@@ -124,7 +138,7 @@ function render($width, $height, $data) {
 
     $numSlices = 0;
     foreach($slices as $key=>$value) {
-        $sliceColors[$key] = hexcolor($image,$colors[$numSlices % count($colors)]);
+        $sliceColors[$key] = hexcolor($image,$conf['colors'][$numSlices % count($conf['colors'])]);
     	$numSlices++;
     }
 

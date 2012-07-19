@@ -15,6 +15,21 @@ $conf = array(
         'a4ffff',
         'ffa4ff',
         'ffffa4',
+    ),
+
+    // default settings (can be overriden)
+    'defaults' => array(
+        'width' => 340,
+        'height' => 300,
+
+        // show a legend?
+        'legend' => true,
+
+        // siginficance of rendered numbers (-1 for auto)
+        'significance' => -1,
+
+        // sort pie slices large to small?
+        'sort' => false
     )
 );
 
@@ -95,13 +110,13 @@ if(isset($_SERVER['PATH_INFO'])) {
     error("No parameters given.");
 }
 
-$width = 340;
-$height = 300;
+$width = $conf['defaults']['width'];
+$height = $conf['defaults']['height'];
 $data = array();
 $settings = array(
-    'legend'=>true,
-    'significance'=>-1,
-    'sort'=>false
+    'legend'=>$conf['defaults']['legend'],
+    'significance'=>$conf['defaults']['significance'],
+    'sort'=>$conf['defaults']['sort']
 );
 
 foreach($pathparts as $p) {
